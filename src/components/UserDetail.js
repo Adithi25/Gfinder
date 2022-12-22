@@ -1,11 +1,28 @@
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import RepoList from "./RepoList";
 
 const UserDetail = (props) => {
+  const [user, setUser] = useState({});
+  const [repos, setRepos] = useState([]);
+  const params = useParams();
+
+  const getDetails = async (login) => {
+    const res = await axios.get(`https://api.github.com/users/${login}`);
+    setUser(res.data);
+  };
+
+  const getRepo = async (username) => {
+    const res = await axios.get(
+      `https://api.github.com/users/${username}/repos?per_page=5&sort=asc`
+    );
+    setRepos(res.data);
+  };
+
   useEffect(() => {
-    props.getDetails(props.match.params.anything);
-    props.getRepo(props.match.params.anything);
+    getDetails(params.anything);
+    getRepo(params.anything);
   }, []);
   return (
     <>
@@ -13,7 +30,7 @@ const UserDetail = (props) => {
         Back to search
       </Link>
       Hireable:
-      {props.user.hireable ? (
+      {user.hireable ? (
         <i className="fa fa-check text-success" />
       ) : (
         <i className="fa fa-times-circle text-danger" />
@@ -21,43 +38,43 @@ const UserDetail = (props) => {
       <div className="card grid-2">
         <div className="all center">
           <img
-            src={props.user.avatar_url}
+            src={user.avatar_url}
             className="round-img"
             alt=""
             style={{ width: "150px" }}
           />
-          <h1>{props.user.name}</h1>
-          <p>Location:{props.user.location}</p>
+          <h1>{user.name}</h1>
+          <p>Location:{user.location}</p>
         </div>
         <div>
-          {props.user.bio && (
+          {user.bio && (
             <>
               <h3>Bio</h3>
-              <p>{props.user.bio}</p>
+              <p>{user.bio}</p>
             </>
           )}
-          <a href={props.user.html_url} className="btn btn-dark my-1">
+          <a href={user.html_url} className="btn btn-dark my-1">
             Visit Github Profile
           </a>
           <ul>
             <li>
-              {props.user.company && (
+              {user.company && (
                 <>
-                  <strong>Company:{props.user.company}</strong>
+                  <strong>Company:{user.company}</strong>
                 </>
               )}
             </li>
             <li>
-              {props.user.blog && (
+              {user.blog && (
                 <>
-                  <strong>Website:{props.user.blog}</strong>
+                  <strong>Website:{user.blog}</strong>
                 </>
               )}
             </li>
             <li>
-              {props.user.login && (
+              {user.login && (
                 <>
-                  <strong>{props.user.login}</strong>
+                  <strong>{user.login}</strong>
                 </>
               )}
             </li>
@@ -65,20 +82,14 @@ const UserDetail = (props) => {
         </div>
       </div>
       <div className="card text-center">
-        <div className="badge badge-primary">
-          Followers:{props.user.followers}
-        </div>
-        <div className="badge badge-success">
-          Following:{props.user.following}
-        </div>
+        <div className="badge badge-primary">Followers:{user.followers}</div>
+        <div className="badge badge-success">Following:{user.following}</div>
         <div className="badge badge-danger">
-          Public Repos:{props.user.public_repos}
+          Public Repos:{user.public_repos}
         </div>
-        <div className="badge badge-dark">
-          public Gists:{props.user.public_gists}
-        </div>
+        <div className="badge badge-dark">public Gists:{user.public_gists}</div>
       </div>
-      <RepoList repos={props.repos} />
+      <RepoList repos={repos} />
     </>
   );
 };
